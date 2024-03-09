@@ -1,15 +1,18 @@
-const { spawn } = require('child_process');
+const { fork } = require('child_process');
 
 
-const worker1Process = spawn('node', ['./src/botListener/botListener.js']);
-const worker2Process = spawn('node', ['./src/incomingWhatsapp/incomingWhatsapp.js']);
+const worker1Process = fork('./src/botListener/botListener.js');
+
+const worker2Process = fork('./src/botResponse/botResponse.js');
 
 
-worker1Process.on('exit', (code) => {
-  console.log(`worker1Process exited with code ${code}`);
+worker1Process.on('message', (message) => {
+  console.log('Message from botListnerWorker:', message);
 });
 
-worker2Process.on('exit', (code) => {
-  console.log(`worker2Process exited with code ${code}`);
+worker2Process.on('message', (message) => {
+  console.log('Message from BotResponseWorker:', message);
 });
 
+worker1Process.send({ command: 'start' });
+worker2Process.send({ command: 'start' });
